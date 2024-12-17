@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot Interface</title>
+    <style>
+        /* Basic reset */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        /* Chat container */
+        .chat-container {
+            width: 100%;
+            max-width: 500px;
+            background: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            height: 80vh;
+        }
+
+        /* Header */
+        .chat-header {
+            background-color: #0078ff;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            border-radius: 10px 10px 0 0;
+            font-size: 1.2rem;
+        }
+
+        /* Chat messages */
+        .chat-box {
+            flex: 1;
+            padding: 10px;
+            overflow-y: auto;
+            background-color: #f9f9f9;
+        }
+
+        .chat-message {
+            margin-bottom: 10px;
+        }
+
+        .user-message {
+            text-align: right;
+            color: #333;
+        }
+
+        .bot-message {
+            text-align: left;
+            color: #0078ff;
+        }
+
+        /* Input area */
+        .chat-input {
+            display: flex;
+            padding: 10px;
+            border-top: 1px solid #ddd;
+            background-color: #fff;
+            border-radius: 0 0 10px 10px;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 10px;
+            font-size: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .chat-input button {
+            background-color: #0078ff;
+            color: white;
+            border: none;
+            margin-left: 10px;
+            padding: 10px 15px;
+            font-size: 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .chat-input button:hover {
+            background-color: #005bbf;
+        }
+    </style>
+</head>
+<body>
+    <!-- Chat Interface -->
+    <div class="chat-container">
+        <!-- Chat Header -->
+        <div class="chat-header">Chatbot Interface</div>
+
+        <!-- Chat Messages -->
+        <div class="chat-box" id="chat-box"></div>
+
+        <!-- Input Area -->
+        <div class="chat-input">
+            <input type="text" id="user-input" placeholder="Type a message..." />
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        // Chat Functionality
+        async function sendMessage() {
+            const userInput = document.getElementById("user-input").value.trim();
+            const chatBox = document.getElementById("chat-box");
+
+            if (!userInput) return;
+
+            // Add User Message
+            const userMessage = document.createElement("div");
+            userMessage.className = "chat-message user-message";
+            userMessage.textContent = `You: ${userInput}`;
+            chatBox.appendChild(userMessage);
+
+            document.getElementById("user-input").value = "";
+
+            // Scroll to bottom
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            try {
+                // Make API Request
+                const response = await fetch("https://api.openai.com/v1/chat/completions", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": "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" // Replace YOUR_API_KEY with OpenAI API Key
+                    },
+                    body: JSON.stringify({
+                        model: "gpt-3.5-turbo",
+                        messages: [{ role: "user", content: userInput }],
+                        temperature: 0.7
+                    })
+                });
+
+                const data = await response.json();
+
+                // Extract Bot Response
+                const botReply = data.choices[0].message.content;
+
+                // Add Bot Message
+                const botMessage = document.createElement("div");
+                botMessage.className = "chat-message bot-message";
+                botMessage.textContent = `Bot: ${botReply}`;
+                chatBox.appendChild(botMessage);
+
+                // Scroll to bottom
+                chatBox.scrollTop = chatBox.scrollHeight;
+
+            } catch (error) {
+                console.error("Error:", error);
+
+                const errorMessage = document.createElement("div");
+                errorMessage.className = "chat-message bot-message";
+                errorMessage.textContent = "Bot: Sorry, something went wrong.";
+                chatBox.appendChild(errorMessage);
+            }
+        }
+    </script>
+</body>
+</html>
